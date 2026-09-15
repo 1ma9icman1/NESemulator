@@ -1,5 +1,4 @@
 import React from 'react';
-import { NES } from 'jsnes';
 
 interface ControllerOverlayProps {
   onButtonDown: (button: number) => void;
@@ -36,26 +35,26 @@ export const ControllerOverlay: React.FC<ControllerOverlayProps> = ({ onButtonDo
         
         {/* D-Pad - using NES Constants */}
         <div className="relative w-32 h-32 ml-4">
-            {createButton(NES.Buttons.UP, '', 'absolute top-0 left-10 w-12 h-12 bg-black rounded-t-sm', 'dpad')}
-            {createButton(NES.Buttons.DOWN, '', 'absolute bottom-0 left-10 w-12 h-12 bg-black rounded-b-sm', 'dpad')}
-            {createButton(NES.Buttons.LEFT, '', 'absolute top-10 left-0 w-12 h-12 bg-black rounded-l-sm', 'dpad')}
-            {createButton(NES.Buttons.RIGHT, '', 'absolute top-10 right-0 w-12 h-12 bg-black rounded-r-sm', 'dpad')}
+            {createButton(4, '', 'absolute top-0 left-10 w-12 h-12 bg-black rounded-t-sm', 'dpad')}
+            {createButton(5, '', 'absolute bottom-0 left-10 w-12 h-12 bg-black rounded-b-sm', 'dpad')}
+            {createButton(6, '', 'absolute top-10 left-0 w-12 h-12 bg-black rounded-l-sm', 'dpad')}
+            {createButton(7, '', 'absolute top-10 right-0 w-12 h-12 bg-black rounded-r-sm', 'dpad')}
             <div className="absolute top-10 left-10 w-12 h-12 bg-black"></div>
         </div>
 
         {/* Start/Select Panel - using NES Constants 2,3 */}
         <div className="flex flex-col gap-6 items-center">
             <div className="flex gap-4">
-                {createButton(NES.Buttons.SELECT, 'SELECT', 'w-16 h-6 bg-stone-600 text-stone-200 text-[10px]')}
-                {createButton(NES.Buttons.START, 'START', 'w-16 h-6 bg-stone-600 text-stone-200 text-[10px]')}
+                {createButton(2, 'SELECT', 'w-16 h-6 bg-stone-600 text-stone-200 text-[10px]')}
+                {createButton(3, 'START', 'w-16 h-6 bg-stone-600 text-stone-200 text-[10px]')}
             </div>
             <div className="text-stone-700 font-bold tracking-widest text-xl">Nintendo</div>
         </div>
 
         {/* A/B Buttons - using NES Constants 0,1 */}
         <div className="flex gap-6 mr-4">
-            {createButton(NES.Buttons.BUTTON_B, 'B', 'w-20 h-20 bg-red-600 text-white shadow-inner', 'circle')}
-            {createButton(NES.Buttons.BUTTON_A, 'A', 'w-20 h-20 bg-red-600 text-white shadow-inner', 'circle')}
+            {createButton(1, 'B', 'w-20 h-20 bg-red-600 text-white shadow-inner', 'circle')}
+            {createButton(0, 'A', 'w-20 h-20 bg-red-600 text-white shadow-inner', 'circle')}
         </div>
       </div>
     </div>
