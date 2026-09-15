@@ -91,8 +91,9 @@ const EmulatorView = ({ socket, sessionId, player1Connected, player2Connected, r
   }, [romData]);
 
   const triggerFullScreen = () => {
-    if (appContainerRef.current && !isFullScreen) {
-      appContainerRef.current.requestFullscreen().then(() => {
+    const canvas = emulatorRef.current?.getCanvas();
+    if (canvas && !isFullScreen) {
+      canvas.requestFullscreen().then(() => {
         setIsFullScreen(true);
       }).catch(console.error);
     }

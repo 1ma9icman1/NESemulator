@@ -27,7 +27,7 @@ export const DriveGameSelector = forwardRef(({ onGameSelected }: { onGameSelecte
       .then(data => {
         if (data.error) throw new Error(data.error);
         
-        const priorityOrder = ['bubble bobble', 'bubble bobble 2', 'mario', 'excitebike', 'zelda'];
+        const priorityOrder = ['bubble bobble', 'bubble bobble 2'];
         
         const sortedGames = data.sort((a: any, b: any) => {
           const nameA = a.name.toLowerCase();
@@ -78,7 +78,6 @@ export const DriveGameSelector = forwardRef(({ onGameSelected }: { onGameSelecte
       <div className="max-h-40 overflow-y-auto">
         {games
           .filter(g => g.name.toLowerCase().includes(searchTerm.toLowerCase()))
-          .slice(0, 3)
           .map((game, index) => {
             return (
               <button 

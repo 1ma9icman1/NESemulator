@@ -11,6 +11,7 @@ export const Emulator = forwardRef(({ romData, onStart }: { romData: Uint8Array 
   useImperativeHandle(ref, () => ({
     buttonDown: (controller: number, button: number) => nesRef.current?.buttonDown(controller, button),
     buttonUp: (controller: number, button: number) => nesRef.current?.buttonUp(controller, button),
+    getCanvas: () => canvasRef.current,
   }));
 
   useEffect(() => {
