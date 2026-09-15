@@ -53,15 +53,18 @@ const EmulatorView = ({ socket, sessionId, player1Connected, player2Connected, r
   useEffect(() => {
     if (!socket) return;
     const handler = (data: any) => {
+        console.log('Input received:', data);
         // Always pass input to emulator IF a game is loaded.
         // If not loaded, pass to game selector.
         if (romData) {
+            console.log('Passing to emulator');
             if (data.type === 'down') {
                 emulatorRef.current?.buttonDown(data.playerId, data.button);
             } else {
                 emulatorRef.current?.buttonUp(data.playerId, data.button);
             }
         } else {
+            console.log('Passing to game selector');
             gameSelectorRef.current?.handleInput(data.button, data.type);
         }
     };
