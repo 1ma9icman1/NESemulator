@@ -14,6 +14,13 @@ import { ControllerOverlay } from './components/ControllerOverlay';
 
 const ControllerView = ({ socket }: { socket: Socket | null }) => {
   const { sessionId, playerId } = useParams();
+  const [isConnected, setIsConnected] = useState(false);
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.on('connected', () => setIsConnected(true));
+    return () => { socket.off('connected'); };
+  }, [socket]);
 
   const sendInput = (button: number, type: 'down' | 'up') => {
     socket?.emit('controller-input', { sessionId, playerId: parseInt(playerId || '1'), button, type });
@@ -26,6 +33,7 @@ const ControllerView = ({ socket }: { socket: Socket | null }) => {
   return (
     <div className="w-screen h-screen bg-transparent flex flex-col items-center justify-center">
       <h2 className="text-white mb-4">Controller P{playerId}</h2>
+      {isConnected && <div className="text-green-500 mb-2 font-bold">CONNECTED</div>}
       <ControllerOverlay 
         onButtonDown={(btn) => sendInput(btn, 'down')}
         onButtonUp={(btn) => sendInput(btn, 'up')}
