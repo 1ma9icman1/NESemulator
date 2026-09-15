@@ -1,5 +1,17 @@
 import React from 'react';
-import { NES } from 'jsnes';
+const NES = {
+  Buttons: {
+    BUTTON_A: 0,
+    BUTTON_B: 1,
+    SELECT: 2,
+    START: 3,
+    UP: 4,
+    DOWN: 5,
+    LEFT: 6,
+    RIGHT: 7,
+  }
+};
+
 
 interface ControllerOverlayProps {
   onButtonDown: (button: number) => void;
