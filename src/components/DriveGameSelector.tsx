@@ -77,6 +77,7 @@ export const DriveGameSelector = forwardRef(({ onGameSelected }: { onGameSelecte
       <div className="max-h-40 overflow-y-auto">
         {games
           .filter(g => g.name.toLowerCase().includes(searchTerm.toLowerCase()))
+          .slice(0, 3)
           .map((game, index) => {
             return (
               <button 

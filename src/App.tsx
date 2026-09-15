@@ -69,17 +69,19 @@ const EmulatorView = ({ socket, sessionId, player1Connected, player2Connected, r
   };
 
   return (
-    <div ref={appContainerRef} className={`w-screen h-screen flex flex-col items-center justify-center text-white bg-transparent ${isFullScreen ? '!p-0' : 'p-4'}`}>
-      <div className={`flex flex-col items-center justify-center text-center gap-6 ${isFullScreen ? 'w-screen h-screen !p-0' : 'bg-black/70 p-8 rounded-lg border-2 border-amber-500 backdrop-blur-sm shadow-xl'}`}>
-        <h1 className="text-4xl font-bold tracking-tight text-white">NES EMULATOR</h1>
+    <div ref={appContainerRef} className={`w-screen h-screen flex flex-col items-center justify-start pt-44 text-white bg-transparent ${isFullScreen ? '!p-0' : 'p-4'} gap-6`}>
+      <div className={`flex flex-col items-center justify-center text-center ${isFullScreen ? 'w-screen h-screen !p-0' : ''}`}>
+        <h1 className="text-4xl font-bold tracking-tight text-transparent">NES EMULATOR</h1>
         
-        <div className={`${isFullScreen ? 'w-full h-full' : 'w-full max-w-3xl'}`} onClick={triggerFullScreen}>
+        <div className={`${isFullScreen ? 'w-full h-full' : 'w-full max-w-5xl'}`} onClick={triggerFullScreen}>
           <Emulator ref={emulatorRef} romData={romData} onStart={triggerFullScreen} />
         </div>
+      </div>
 
-        {!isFullScreen && <DriveGameSelector ref={gameSelectorRef} onGameSelected={setRomData} />}
+      {!isFullScreen && (
+        <div className="flex flex-col items-center gap-4 bg-black/70 p-4 rounded-lg border-2 border-amber-500 backdrop-blur-sm shadow-xl mt-16">
+          <DriveGameSelector ref={gameSelectorRef} onGameSelected={setRomData} />
 
-        {!isFullScreen && (
           <div className="flex gap-8 justify-center">
             <div className="flex flex-col items-center gap-2">
               <QRCodeSVG value={`${window.location.origin}/controller/${sessionId}/1`} size={100} />
@@ -94,8 +96,8 @@ const EmulatorView = ({ socket, sessionId, player1Connected, player2Connected, r
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
