@@ -67,7 +67,6 @@ async function startServer() {
         // data: { sessionId, playerId }
         socket.join(data.sessionId);
         socket.to(data.sessionId).emit("player-connected", data.playerId);
-        socket.emit("connected", { status: "connected" });
         console.log(`User joined session: ${data.sessionId} as Player ${data.playerId}`);
     });
     

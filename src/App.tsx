@@ -113,58 +113,37 @@ const EmulatorView = ({ socket, sessionId, player1Connected, player2Connected, r
 
 export default function App() {
   const [romData, setRomData] = useState<Uint8Array | null>(null);
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionId] = useState(() => crypto.randomUUID());
   const [player1Connected, setPlayer1Connected] = useState(false);
   const [player2Connected, setPlayer2Connected] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
 
-  // Initialize socket connection
   useEffect(() => {
-    // Only connect once we have a session ID
-    if (!sessionId) return;
-    
     const s = io();
     s.on('connect', () => {
-      s.emit('join-session', { sessionId, playerId: 0 }); // Join as viewer initially
+      setSocket(s);
     });
     s.on('player-connected', (playerId) => {
         if (playerId === 1) setPlayer1Connected(true);
         if (playerId === 2) setPlayer2Connected(true);
     });
-    setSocket(s);
     return () => { s.disconnect(); };
-  }, [sessionId]);
+  }, []);
 
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/controller/:sessionId/:playerId" element={<ControllerRouteSetter setSessionId={setSessionId}><ControllerView socket={socket} /></ControllerRouteSetter>} />
-        <Route path="/" element={<EmulatorRouteSetter setSessionId={setSessionId}><EmulatorView 
+        <Route path="/controller/:sessionId/:playerId" element={<ControllerView socket={socket} />} />
+        <Route path="/" element={<EmulatorView 
           socket={socket} 
           sessionId={sessionId}
           player1Connected={player1Connected}
           player2Connected={player2Connected}
           romData={romData}
           setRomData={setRomData}
-        /></EmulatorRouteSetter>} />
+        />} />
       </Routes>
     </BrowserRouter>
   );
-}
-
-function ControllerRouteSetter({ setSessionId, children }: { setSessionId: (id: string) => void, children: React.ReactNode }) {
-  const { sessionId } = useParams();
-  useEffect(() => {
-    if (sessionId) setSessionId(sessionId);
-  }, [sessionId, setSessionId]);
-  return <>{children}</>;
-}
-
-function EmulatorRouteSetter({ setSessionId, children }: { setSessionId: (id: string) => void, children: React.ReactNode }) {
-  const [id] = useState(() => crypto.randomUUID());
-  useEffect(() => {
-    setSessionId(id);
-  }, [id, setSessionId]);
-  return <>{children}</>;
 }
 
