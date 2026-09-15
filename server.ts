@@ -76,6 +76,12 @@ async function startServer() {
       console.log("Controller input:", data);
       io.to(data.sessionId).emit("game-input", data);
     });
+    
+    socket.on("controller-exit", (data) => {
+      // data: { sessionId, playerId }
+      console.log("Controller exit:", data);
+      io.to(data.sessionId).emit("game-exit", data);
+    });
   });
 
   // Vite middleware for development

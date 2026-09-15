@@ -27,6 +27,10 @@ const ControllerView = ({ socket }: { socket: Socket | null }) => {
     socket?.emit('controller-input', { sessionId, playerId: parseInt(playerId || '1'), button, type });
   };
 
+  const sendExit = () => {
+    socket?.emit('controller-exit', { sessionId, playerId: parseInt(playerId || '1') });
+  };
+
   if (!socket) {
     return <div className="text-white">Connecting...</div>;
   }
@@ -38,7 +42,7 @@ const ControllerView = ({ socket }: { socket: Socket | null }) => {
       <ControllerOverlay 
         onButtonDown={(btn) => sendInput(btn, 'down')}
         onButtonUp={(btn) => sendInput(btn, 'up')}
-        onExit={() => {}}
+        onExit={sendExit}
       />
     </div>
   );
@@ -52,25 +56,39 @@ const EmulatorView = ({ socket, sessionId, player1Connected, player2Connected, r
 
   useEffect(() => {
     if (!socket) return;
-    const handler = (data: any) => {
-        console.log('Input received:', data);
+    const inputHandler = (data: any) => {
         // Always pass input to emulator IF a game is loaded.
         // If not loaded, pass to game selector.
         if (romData) {
-            console.log('Passing to emulator');
             if (data.type === 'down') {
                 emulatorRef.current?.buttonDown(data.playerId, data.button);
             } else {
                 emulatorRef.current?.buttonUp(data.playerId, data.button);
             }
         } else {
-            console.log('Passing to game selector');
             gameSelectorRef.current?.handleInput(data.button, data.type);
         }
     };
-    socket.on('game-input', handler);
-    return () => { socket.off('game-input', handler); };
+    
+    const exitHandler = () => {
+        setRomData(null);
+        setIsFullScreen(false);
+        document.exitFullscreen?.().catch(console.error);
+    };
+
+    socket.on('game-input', inputHandler);
+    socket.on('game-exit', exitHandler);
+    return () => { 
+        socket.off('game-input', inputHandler); 
+        socket.off('game-exit', exitHandler);
+    };
   }, [socket, romData]);
+
+  useEffect(() => {
+    if (romData) {
+        triggerFullScreen();
+    }
+  }, [romData]);
 
   const triggerFullScreen = () => {
     if (appContainerRef.current && !isFullScreen) {

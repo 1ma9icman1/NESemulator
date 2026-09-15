@@ -48,6 +48,13 @@ export const ControllerOverlay: React.FC<ControllerOverlayProps> = ({ onButtonDo
                 {createButton(2, 'SELECT', 'w-16 h-6 bg-stone-600 text-stone-200 text-[10px]')}
                 {createButton(3, 'START', 'w-16 h-6 bg-stone-600 text-stone-200 text-[10px]')}
             </div>
+            <button 
+                className="w-20 h-8 bg-red-800 text-white font-bold rounded text-xs"
+                onClick={onExit}
+                onTouchStart={onExit}
+            >
+                EXIT
+            </button>
             <div className="text-stone-700 font-bold tracking-widest text-xl">Nintendo</div>
         </div>
 
