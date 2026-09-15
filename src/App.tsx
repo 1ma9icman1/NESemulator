@@ -1,0 +1,139 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import { useState, useEffect, useRef } from 'react';
+import { BrowserRouter, Routes, Route, useParams } from 'react-router-dom';
+import { Gamepad2 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
+import { io, Socket } from 'socket.io-client';
+import { DriveGameSelector } from './components/DriveGameSelector';
+import { Emulator } from './components/Emulator';
+import { ControllerOverlay } from './components/ControllerOverlay';
+
+const ControllerView = ({ socket }: { socket: Socket | null }) => {
+  const { sessionId, playerId } = useParams();
+
+  const sendInput = (button: number, type: 'down' | 'up') => {
+    socket?.emit('controller-input', { sessionId, playerId: parseInt(playerId || '1'), button, type });
+  };
+
+  if (!socket) {
+    return <div className="text-white">Connecting...</div>;
+  }
+
+  return (
+    <div className="w-screen h-screen bg-transparent flex flex-col items-center justify-center">
+      <h2 className="text-white mb-4">Controller P{playerId}</h2>
+      <ControllerOverlay 
+        onButtonDown={(btn) => sendInput(btn, 'down')}
+        onButtonUp={(btn) => sendInput(btn, 'up')}
+        onExit={() => {}}
+      />
+    </div>
+  );
+};
+
+const EmulatorView = ({ socket, sessionId, player1Connected, player2Connected, romData, setRomData }: any) => {
+  const appContainerRef = useRef<HTMLDivElement>(null);
+  const emulatorRef = useRef<any>(null);
+  const gameSelectorRef = useRef<any>(null);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handler = (data: any) => {
+        // Always pass input to emulator IF a game is loaded.
+        // If not loaded, pass to game selector.
+        if (romData) {
+            if (data.type === 'down') {
+                emulatorRef.current?.buttonDown(data.playerId, data.button);
+            } else {
+                emulatorRef.current?.buttonUp(data.playerId, data.button);
+            }
+        } else {
+            gameSelectorRef.current?.handleInput(data.button, data.type);
+        }
+    };
+    socket.on('game-input', handler);
+    return () => { socket.off('game-input', handler); };
+  }, [socket, romData]);
+
+  const triggerFullScreen = () => {
+    if (appContainerRef.current && !isFullScreen) {
+      appContainerRef.current.requestFullscreen().then(() => {
+        setIsFullScreen(true);
+      }).catch(console.error);
+    }
+  };
+
+  return (
+    <div ref={appContainerRef} className={`w-screen h-screen flex flex-col items-center justify-center text-white bg-transparent ${isFullScreen ? '!p-0' : 'p-4'}`}>
+      <div className={`flex flex-col items-center justify-center text-center gap-6 ${isFullScreen ? 'w-screen h-screen !p-0' : 'bg-black/70 p-8 rounded-lg border-2 border-amber-500 backdrop-blur-sm shadow-xl'}`}>
+        <h1 className="text-4xl font-bold tracking-tight text-white">NES EMULATOR</h1>
+        
+        <div className={`${isFullScreen ? 'w-full h-full' : 'w-full max-w-3xl'}`} onClick={triggerFullScreen}>
+          <Emulator ref={emulatorRef} romData={romData} onStart={triggerFullScreen} />
+        </div>
+
+        {!isFullScreen && <DriveGameSelector ref={gameSelectorRef} onGameSelected={setRomData} />}
+
+        {!isFullScreen && (
+          <div className="flex gap-8 justify-center">
+            <div className="flex flex-col items-center gap-2">
+              <QRCodeSVG value={`${window.location.origin}/controller/${sessionId}/1`} size={100} />
+              <div className={`flex items-center gap-2 text-sm ${player1Connected ? 'text-green-400' : 'text-gray-400'}`}>
+                <Gamepad2 size={16} /> P1: {player1Connected ? 'CONNECTED' : 'DISCONNECTED'}
+              </div>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <QRCodeSVG value={`${window.location.origin}/controller/${sessionId}/2`} size={100} />
+              <div className={`flex items-center gap-2 text-sm ${player2Connected ? 'text-green-400' : 'text-gray-400'}`}>
+                <Gamepad2 size={16} /> P2: {player2Connected ? 'CONNECTED' : 'DISCONNECTED'}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default function App() {
+  const [romData, setRomData] = useState<Uint8Array | null>(null);
+  const [sessionId] = useState(() => crypto.randomUUID());
+  const [player1Connected, setPlayer1Connected] = useState(false);
+  const [player2Connected, setPlayer2Connected] = useState(false);
+  const [socket, setSocket] = useState<Socket | null>(null);
+
+  useEffect(() => {
+    const s = io();
+    s.on('connect', () => {
+      s.emit('join-session', { sessionId, playerId: 0 }); // Join as viewer initially
+    });
+    s.on('player-connected', (playerId) => {
+        if (playerId === 1) setPlayer1Connected(true);
+        if (playerId === 2) setPlayer2Connected(true);
+    });
+    setSocket(s);
+    return () => { s.disconnect(); };
+  }, [sessionId]);
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/controller/:sessionId/:playerId" element={<ControllerView socket={socket} />} />
+        <Route path="/" element={<EmulatorView 
+          socket={socket} 
+          sessionId={sessionId}
+          player1Connected={player1Connected}
+          player2Connected={player2Connected}
+          romData={romData}
+          setRomData={setRomData}
+        />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
