@@ -18,9 +18,10 @@ const ControllerView = ({ socket }: { socket: Socket | null }) => {
 
   useEffect(() => {
     if (!socket) return;
+    socket.emit('join-session', { sessionId, playerId: parseInt(playerId || '1') });
     socket.on('connected', () => setIsConnected(true));
     return () => { socket.off('connected'); };
-  }, [socket]);
+  }, [socket, sessionId, playerId]);
 
   const sendInput = (button: number, type: 'down' | 'up') => {
     socket?.emit('controller-input', { sessionId, playerId: parseInt(playerId || '1'), button, type });
@@ -112,12 +113,16 @@ const EmulatorView = ({ socket, sessionId, player1Connected, player2Connected, r
 
 export default function App() {
   const [romData, setRomData] = useState<Uint8Array | null>(null);
-  const [sessionId] = useState(() => crypto.randomUUID());
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [player1Connected, setPlayer1Connected] = useState(false);
   const [player2Connected, setPlayer2Connected] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
 
+  // Initialize socket connection
   useEffect(() => {
+    // Only connect once we have a session ID
+    if (!sessionId) return;
+    
     const s = io();
     s.on('connect', () => {
       s.emit('join-session', { sessionId, playerId: 0 }); // Join as viewer initially
@@ -133,17 +138,33 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/controller/:sessionId/:playerId" element={<ControllerView socket={socket} />} />
-        <Route path="/" element={<EmulatorView 
+        <Route path="/controller/:sessionId/:playerId" element={<ControllerRouteSetter setSessionId={setSessionId}><ControllerView socket={socket} /></ControllerRouteSetter>} />
+        <Route path="/" element={<EmulatorRouteSetter setSessionId={setSessionId}><EmulatorView 
           socket={socket} 
           sessionId={sessionId}
           player1Connected={player1Connected}
           player2Connected={player2Connected}
           romData={romData}
           setRomData={setRomData}
-        />} />
+        /></EmulatorRouteSetter>} />
       </Routes>
     </BrowserRouter>
   );
+}
+
+function ControllerRouteSetter({ setSessionId, children }: { setSessionId: (id: string) => void, children: React.ReactNode }) {
+  const { sessionId } = useParams();
+  useEffect(() => {
+    if (sessionId) setSessionId(sessionId);
+  }, [sessionId, setSessionId]);
+  return <>{children}</>;
+}
+
+function EmulatorRouteSetter({ setSessionId, children }: { setSessionId: (id: string) => void, children: React.ReactNode }) {
+  const [id] = useState(() => crypto.randomUUID());
+  useEffect(() => {
+    setSessionId(id);
+  }, [id, setSessionId]);
+  return <>{children}</>;
 }
 

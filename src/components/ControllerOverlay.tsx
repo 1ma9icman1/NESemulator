@@ -25,7 +25,6 @@ export const ControllerOverlay: React.FC<ControllerOverlayProps> = ({ onButtonDo
 
   return (
     <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
-      <div className="text-white text-4xl">DEBUG: CONTROLLER LOADED</div>
       <button onClick={onExit} className="absolute top-4 right-4 text-white bg-white/10 p-2 rounded-full">
         <X size={24} />
       </button>
