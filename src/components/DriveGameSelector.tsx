@@ -27,9 +27,16 @@ export const DriveGameSelector = forwardRef(({ onGameSelected }: { onGameSelecte
       .then(data => {
         if (data.error) throw new Error(data.error);
         
+        console.log('API Games Data:', data); // Debugging
+        
+        const filteredGames = data.filter((g: any) => {
+            const name = g.name.toLowerCase();
+            return name !== 'background' && name !== 'bg';
+        });
+
         const priorityOrder = ['bubble bobble', 'bubble bobble 2'];
         
-        const sortedGames = data.sort((a: any, b: any) => {
+        const sortedGames = filteredGames.sort((a: any, b: any) => {
           const nameA = a.name.toLowerCase();
           const nameB = b.name.toLowerCase();
 
